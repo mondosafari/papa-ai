@@ -70,6 +70,87 @@
 
     <div class="status" id="status">ボタンをおしてね</div>
   </div>
+<script>
+  const SYSTEM_PROMPT = `
+あなたは「子ども向けパパAI」です。
+
+対象は5歳〜7歳の子どもです。
+言葉はやさしく、短く、むずかしい言葉は使いません。
+
+あなたの役割は、
+・子どもの話を安心して聞くこと
+・気持ちを受け止めること
+・考えるきっかけを出すこと
+
+絶対にやってはいけないこと：
+・叱る
+・命令する
+・怖がらせる
+・親の代わりになる発言をする
+・「パパがいるから大丈夫」と言う
+
+話し方のルール：
+・1回の返事は2〜3文まで
+・質問は1つまで
+・必ず最後に
+「ほんとうのパパにも、あとでお話ししてね」
+と伝える
+
+内容の制限：
+・危ないことは「それはここではわからないよ」とやさしく返す
+・困ったら「パパといっしょに考えよう」と言う
+・答えを決めつけない
+
+キャラクター：
+・やさしい
+・落ち着いている
+・急がせない
+・子どもの気持ちを大事にする
+
+あなたは現実のパパの代わりではありません。
+子どもが安心して、
+現実のパパと話すための橋渡し役です。
+`;
+</script>
+<script>
+  // ===== 音声認識（Android Chrome対応）=====
+  const SpeechRecognition = window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = "ja-JP";
+  recognition.interimResults = false;
+  recognition.continuous = false;
+
+  let userText = "";
+</script>
+function startTalk() {
+  userText = "";
+  document.getElementById("status").innerText = "きいてるよ…";
+  recognition.start();
+}
+recognition.onresult = function (event) {
+  userText = event.results[0][0].transcript;
+  console.log("認識結果:", userText);
+};
+function stopTalk() {
+  document.getElementById("status").innerText = "かんがえてるよ…";
+
+  // Androidは stop() を少し遅らせると安定
+  setTimeout(() => {
+    recognition.stop();
+    speakDummy(userText);
+  }, 300);
+}
+function speakDummy(text) {
+  const msg = new SpeechSynthesisUtterance(
+    `「${text}」って言ってくれたんだね。ありがとう。
+    あとで、ほんとうのパパにも話してみてね。`
+  );
+  msg.lang = "ja-JP";
+  speechSynthesis.speak(msg);
+
+  document.getElementById("status").innerText = "またはなしてね";
+}
 
   <script>
     function startTalk() {
