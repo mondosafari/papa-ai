@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>パパとおはなし</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #f2f6ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: "Hiragino Kaku Gothic ProN", "Arial", sans-serif;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    .avatar {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: #dbe4ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 80px;
+      margin: 0 auto 30px;
+    }
+
+    .mic-button {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: #ff6b6b;
+      color: white;
+      font-size: 32px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .mic-button:active {
+      background: #ff3b3b;
+      transform: scale(0.95);
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 20px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="avatar">👨</div>
+
+    <button class="mic-button"
+      onmousedown="startTalk()"
+      onmouseup="stopTalk()"
+      ontouchstart="startTalk()"
+      ontouchend="stopTalk()">
+      🎤<br>はなす
+    </button>
+
+    <div class="status" id="status">ボタンをおしてね</div>
+  </div>
+
+  <script>
+    function startTalk() {
+      document.getElementById("status").innerText = "きいてるよ…";
+    }
+
+    function stopTalk() {
+      document.getElementById("status").innerText = "パパがこたえるね";
+      
+      // 仮の返事（あとでAI音声に置き換える）
+      setTimeout(() => {
+        speakDummy();
+      }, 1000);
+    }
+
+    function speakDummy() {
+      const msg = new SpeechSynthesisUtterance(
+        "おはなししてくれてありがとう。あとでほんとうのパパにも教えてね。"
+      );
+      msg.lang = "ja-JP";
+      speechSynthesis.speak(msg);
+
+      document.getElementById("status").innerText = "またはなしてね";
+    }
+  </script>
+
+</body>
+</html>
