@@ -7,8 +7,8 @@
 
   <style>
     body {
-      font-family: sans-serif;
-      background: #f5f5f5;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f2f2f2;
       margin: 0;
       padding: 0;
       text-align: center;
@@ -34,20 +34,22 @@
 
     #subtitle {
       background: #fff;
-      padding: 12px;
-      border-radius: 8px;
-      min-height: 60px;
+      padding: 14px;
+      border-radius: 10px;
+      min-height: 70px;
       margin-bottom: 12px;
       font-size: 16px;
+      line-height: 1.5;
     }
 
-    #controls button {
+    button {
       font-size: 16px;
       padding: 12px 16px;
       margin: 4px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
+      width: 45%;
     }
 
     .talk {
@@ -61,7 +63,7 @@
     }
 
     footer {
-      margin-top: 20px;
+      margin-top: 16px;
       font-size: 12px;
       color: #666;
     }
@@ -71,7 +73,7 @@
 <body>
   <div id="app">
 
-    <!-- アバター表示エリア（将来 HeyGen 等が入る） -->
+    <!-- アバター表示エリア（将来 HeyGen を埋め込む） -->
     <div id="avatar">
       ここに<br>話すアバターが<br>表示されます
     </div>
@@ -81,60 +83,82 @@
       パパ：今日はどんな一日だった？
     </div>
 
-    <!-- 操作 -->
-    <div id="controls">
-      <button class="talk" onclick="startTalk()">はなす</button>
-      <button class="next" onclick="nextScene()">つぎへ</button>
+    <!-- 操作ボタン -->
+    <div>
+      <button class="talk" onclick="talk()">はなす</button>
+      <button class="next" onclick="next()">つぎへ</button>
     </div>
 
     <footer>
-      このパパは、いつもそばで話を聞いてくれる存在です。
+      いつもそばで、話を聞いてくれる存在
     </footer>
+
   </div>
 
   <script>
     /********************************
-     * 人格データ（将来API化予定）
+     * 人格データ（将来JSON/API化）
      ********************************/
     const personality = {
-      id: "papa_basic",
+      name: "パパ",
       role: "father",
-      target_age: [5, 7],
       tone: "やさしい",
-      rule: "否定しない"
+      rule: "否定しない",
+      targetAge: [5, 7]
     };
 
     /********************************
-     * 会話スクリプト（仮）
+     * 会話状態
      ********************************/
-    const scripts = [
-      "今日はどんな一日だった？",
-      "楽しかったこと、あった？",
-      "ちゃんと頑張っててえらいね",
-      "またいつでも話しかけてね"
-    ];
+    let state = {
+      step: 0
+    };
 
-    let scene = 0;
+    /********************************
+     * 会話エンジン
+     ********************************/
+    function getReply(step) {
+      switch (step) {
+        case 0:
+          return "今日はどんな一日だった？";
+        case 1:
+          return "そうなんだ。楽しかった？";
+        case 2:
+          return "ちゃんと話してくれてありがとう";
+        case 3:
+          return "それを聞けて、パパは嬉しいよ";
+        case 4:
+          return "またいつでも話しかけてね";
+        default:
+          return "パパはいつでもここにいるよ";
+      }
+    }
 
-    function startTalk() {
-      const text = scripts[scene];
+    /********************************
+     * 話す（仮音声：端末TTS）
+     ********************************/
+    function talk() {
+      const text = getReply(state.step);
 
       document.getElementById("subtitle").innerText =
-        "パパ：" + text;
+        personality.name + "：" + text;
 
-      // 仮音声（端末のTTS）
+      speechSynthesis.cancel();
+
       const msg = new SpeechSynthesisUtterance(text);
       msg.lang = "ja-JP";
       msg.rate = 0.95;
+      msg.pitch = 1.0;
+
       speechSynthesis.speak(msg);
     }
 
-    function nextScene() {
-      scene++;
-      if (scene >= scripts.length) scene = 0;
-
-      document.getElementById("subtitle").innerText =
-        "パパ：" + scripts[scene];
+    /********************************
+     * 次へ
+     ********************************/
+    function next() {
+      state.step++;
+      talk();
     }
   </script>
 </body>
