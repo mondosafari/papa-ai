@@ -2,111 +2,113 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>パパAI（テスト）</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>いつもそばにいるパパ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: sans-serif;
       background: #f5f5f5;
-      padding: 20px;
-    }
-    h2 {
+      margin: 0;
+      padding: 0;
       text-align: center;
     }
-    .script-box {
-      background: white;
-      padding: 24px;
-      border-radius: 16px;
-      font-size: 1.3em;
-      margin: 20px 0;
-      text-align: center;
-      min-height: 80px;
+
+    #app {
+      max-width: 420px;
+      margin: auto;
+      padding: 16px;
     }
-    .buttons {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    button {
-      font-size: 1em;
-      padding: 14px 20px;
+
+    #avatar {
+      background: #000;
+      height: 240px;
       border-radius: 12px;
+      margin-bottom: 12px;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #subtitle {
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      min-height: 60px;
+      margin-bottom: 12px;
+    }
+
+    #controls button {
+      font-size: 16px;
+      padding: 12px 16px;
+      margin: 4px;
+      border-radius: 8px;
       border: none;
-      background: #4a90e2;
-      color: white;
     }
-    button.stop {
-      background: #999;
+
+    .talk {
+      background: #4CAF50;
+      color: #fff;
     }
-    #status {
-      text-align: center;
-      margin-top: 16px;
-      color: #555;
+
+    .next {
+      background: #2196F3;
+      color: #fff;
     }
   </style>
 </head>
+
 <body>
+  <div id="app">
 
-<h2>🎙 パパとおはなし</h2>
+    <!-- ① アバター表示エリア（将来 HeyGen が入る） -->
+    <div id="avatar">
+      アバター表示エリア
+    </div>
 
-<div class="script-box" id="scriptText">
-  おはよう。パパだよ
-</div>
+    <!-- ② 字幕 / 会話表示 -->
+    <div id="subtitle">
+      パパ：今日はどんな一日だった？
+    </div>
 
-<div class="buttons">
-  <button onclick="startRecording()">録音する</button>
-  <button class="stop" onclick="stopRecording()">とめる</button>
-  <button onclick="nextScript()">つぎへ</button>
-</div>
+    <!-- ③ 操作 -->
+    <div id="controls">
+      <button class="talk" onclick="startTalk()">はなす</button>
+      <button class="next" onclick="nextScene()">つぎへ</button>
+    </div>
 
-<p id="status">よみながら はなしてね</p>
+  </div>
 
-<script>
-  const scripts = [
-    "おはよう。パパだよ",
-    "きょうも いっぱい おはなししようね",
-    "どんな きもちでも だいじだよ",
-    "パパは いつも みかた だよ"
-  ];
+  <script>
+    let scene = 0;
 
-  let index = 0;
-  let recorder;
-  let audioChunks = [];
+    const scripts = [
+      "今日はどんな一日だった？",
+      "楽しかったこと、あった？",
+      "ちゃんと頑張っててえらいね",
+      "またいつでも話しかけてね"
+    ];
 
-  async function startRecording() {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    recorder = new MediaRecorder(stream);
-    recorder.start();
-    audioChunks = [];
+    function startTalk() {
+      document.getElementById("subtitle").innerText =
+        "パパ：きいてるよ";
 
-    recorder.ondataavailable = e => audioChunks.push(e.data);
-    document.getElementById("status").innerText = "ろくおんちゅう…";
-  }
-
-  function stopRecording() {
-    if (!recorder) return;
-    recorder.stop();
-    recorder.onstop = () => {
-      const blob = new Blob(audioChunks, { type: "audio/webm" });
-      const audioURL = URL.createObjectURL(blob);
-      const audio = new Audio(audioURL);
-      audio.play();
-      document.getElementById("status").innerText = "パパのこえが でたね";
-    };
-  }
-
-  function nextScript() {
-    index++;
-    if (index >= scripts.length) {
-      document.getElementById("scriptText").innerText = "おつかれさま。また はなそうね";
-      document.getElementById("status").innerText = "";
-    } else {
-      document.getElementById("scriptText").innerText = scripts[index];
-      document.getElementById("status").innerText = "つぎも よんでみよう";
+      // 仮の音声（将来 HeyGen / AI に差し替え）
+      const msg = new SpeechSynthesisUtterance(
+        scripts[scene]
+      );
+      msg.lang = "ja-JP";
+      speechSynthesis.speak(msg);
     }
-  }
-</script>
 
+    function nextScene() {
+      scene++;
+      if (scene >= scripts.length) scene = 0;
+
+      document.getElementById("subtitle").innerText =
+        "パパ：" + scripts[scene];
+    }
+  </script>
 </body>
 </html>
