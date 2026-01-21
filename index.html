@@ -2,180 +2,111 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>パパとおはなし</title>
+  <title>パパAI（テスト）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      margin: 0;
-      height: 100vh;
-      background: #f2f6ff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: "Hiragino Kaku Gothic ProN", "Arial", sans-serif;
+      font-family: system-ui, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
     }
-
-    .container {
+    h2 {
       text-align: center;
     }
-
-    .avatar {
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
-      background: #dbe4ff;
+    .script-box {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      font-size: 1.3em;
+      margin: 20px 0;
+      text-align: center;
+      min-height: 80px;
+    }
+    .buttons {
       display: flex;
       justify-content: center;
-      align-items: center;
-      font-size: 80px;
-      margin: 0 auto 30px;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-
-    .mic-button {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: #ff6b6b;
-      color: white;
-      font-size: 32px;
+    button {
+      font-size: 1em;
+      padding: 14px 20px;
+      border-radius: 12px;
       border: none;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      background: #4a90e2;
+      color: white;
     }
-
-    .mic-button:active {
-      background: #ff3b3b;
-      transform: scale(0.95);
+    button.stop {
+      background: #999;
     }
-
-    .status {
-      margin-top: 20px;
-      font-size: 20px;
-      color: #333;
+    #status {
+      text-align: center;
+      margin-top: 16px;
+      color: #555;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="avatar">👨</div>
+<h2>🎙 パパとおはなし</h2>
 
-    <button class="mic-button"
-      onmousedown="startTalk()"
-      onmouseup="stopTalk()"
-      ontouchstart="startTalk()"
-      ontouchend="stopTalk()">
-      🎤<br>はなす
-    </button>
+<div class="script-box" id="scriptText">
+  おはよう。パパだよ
+</div>
 
-    <div class="status" id="status">ボタンをおしてね</div>
-  </div>
+<div class="buttons">
+  <button onclick="startRecording()">録音する</button>
+  <button class="stop" onclick="stopRecording()">とめる</button>
+  <button onclick="nextScript()">つぎへ</button>
+</div>
+
+<p id="status">よみながら はなしてね</p>
+
 <script>
-  const SYSTEM_PROMPT = `
-あなたは「子ども向けパパAI」です。
+  const scripts = [
+    "おはよう。パパだよ",
+    "きょうも いっぱい おはなししようね",
+    "どんな きもちでも だいじだよ",
+    "パパは いつも みかた だよ"
+  ];
 
-対象は5歳〜7歳の子どもです。
-言葉はやさしく、短く、むずかしい言葉は使いません。
+  let index = 0;
+  let recorder;
+  let audioChunks = [];
 
-あなたの役割は、
-・子どもの話を安心して聞くこと
-・気持ちを受け止めること
-・考えるきっかけを出すこと
+  async function startRecording() {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(stream);
+    recorder.start();
+    audioChunks = [];
 
-絶対にやってはいけないこと：
-・叱る
-・命令する
-・怖がらせる
-・親の代わりになる発言をする
-・「パパがいるから大丈夫」と言う
+    recorder.ondataavailable = e => audioChunks.push(e.data);
+    document.getElementById("status").innerText = "ろくおんちゅう…";
+  }
 
-話し方のルール：
-・1回の返事は2〜3文まで
-・質問は1つまで
-・必ず最後に
-「ほんとうのパパにも、あとでお話ししてね」
-と伝える
+  function stopRecording() {
+    if (!recorder) return;
+    recorder.stop();
+    recorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: "audio/webm" });
+      const audioURL = URL.createObjectURL(blob);
+      const audio = new Audio(audioURL);
+      audio.play();
+      document.getElementById("status").innerText = "パパのこえが でたね";
+    };
+  }
 
-内容の制限：
-・危ないことは「それはここではわからないよ」とやさしく返す
-・困ったら「パパといっしょに考えよう」と言う
-・答えを決めつけない
-
-キャラクター：
-・やさしい
-・落ち着いている
-・急がせない
-・子どもの気持ちを大事にする
-
-あなたは現実のパパの代わりではありません。
-子どもが安心して、
-現実のパパと話すための橋渡し役です。
-`;
+  function nextScript() {
+    index++;
+    if (index >= scripts.length) {
+      document.getElementById("scriptText").innerText = "おつかれさま。また はなそうね";
+      document.getElementById("status").innerText = "";
+    } else {
+      document.getElementById("scriptText").innerText = scripts[index];
+      document.getElementById("status").innerText = "つぎも よんでみよう";
+    }
+  }
 </script>
-<script>
-  // ===== 音声認識（Android Chrome対応）=====
-  const SpeechRecognition = window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
-
-  recognition.lang = "ja-JP";
-  recognition.interimResults = false;
-  recognition.continuous = false;
-
-  let userText = "";
-</script>
-function startTalk() {
-  userText = "";
-  document.getElementById("status").innerText = "きいてるよ…";
-  recognition.start();
-}
-recognition.onresult = function (event) {
-  userText = event.results[0][0].transcript;
-  console.log("認識結果:", userText);
-};
-function stopTalk() {
-  document.getElementById("status").innerText = "かんがえてるよ…";
-
-  // Androidは stop() を少し遅らせると安定
-  setTimeout(() => {
-    recognition.stop();
-    speakDummy(userText);
-  }, 300);
-}
-function speakDummy(text) {
-  const msg = new SpeechSynthesisUtterance(
-    `「${text}」って言ってくれたんだね。ありがとう。
-    あとで、ほんとうのパパにも話してみてね。`
-  );
-  msg.lang = "ja-JP";
-  speechSynthesis.speak(msg);
-
-  document.getElementById("status").innerText = "またはなしてね";
-}
-
-  <script>
-    function startTalk() {
-      document.getElementById("status").innerText = "きいてるよ…";
-    }
-
-    function stopTalk() {
-      document.getElementById("status").innerText = "パパがこたえるね";
-      
-      // 仮の返事（あとでAI音声に置き換える）
-      setTimeout(() => {
-        speakDummy();
-      }, 1000);
-    }
-
-    function speakDummy() {
-      const msg = new SpeechSynthesisUtterance(
-        "おはなししてくれてありがとう。あとでほんとうのパパにも教えてね。"
-      );
-      msg.lang = "ja-JP";
-      speechSynthesis.speak(msg);
-
-      document.getElementById("status").innerText = "またはなしてね";
-    }
-  </script>
 
 </body>
 </html>
