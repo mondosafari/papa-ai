@@ -29,6 +29,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 14px;
     }
 
     #subtitle {
@@ -37,6 +38,7 @@
       border-radius: 8px;
       min-height: 60px;
       margin-bottom: 12px;
+      font-size: 16px;
     }
 
     #controls button {
@@ -45,6 +47,7 @@
       margin: 4px;
       border-radius: 8px;
       border: none;
+      cursor: pointer;
     }
 
     .talk {
@@ -56,33 +59,54 @@
       background: #2196F3;
       color: #fff;
     }
+
+    footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #666;
+    }
   </style>
 </head>
 
 <body>
   <div id="app">
 
-    <!-- ① アバター表示エリア（将来 HeyGen が入る） -->
+    <!-- アバター表示エリア（将来 HeyGen 等が入る） -->
     <div id="avatar">
-      アバター表示エリア
+      ここに<br>話すアバターが<br>表示されます
     </div>
 
-    <!-- ② 字幕 / 会話表示 -->
+    <!-- 会話表示 -->
     <div id="subtitle">
       パパ：今日はどんな一日だった？
     </div>
 
-    <!-- ③ 操作 -->
+    <!-- 操作 -->
     <div id="controls">
       <button class="talk" onclick="startTalk()">はなす</button>
       <button class="next" onclick="nextScene()">つぎへ</button>
     </div>
 
+    <footer>
+      このパパは、いつもそばで話を聞いてくれる存在です。
+    </footer>
   </div>
 
   <script>
-    let scene = 0;
+    /********************************
+     * 人格データ（将来API化予定）
+     ********************************/
+    const personality = {
+      id: "papa_basic",
+      role: "father",
+      target_age: [5, 7],
+      tone: "やさしい",
+      rule: "否定しない"
+    };
 
+    /********************************
+     * 会話スクリプト（仮）
+     ********************************/
     const scripts = [
       "今日はどんな一日だった？",
       "楽しかったこと、あった？",
@@ -90,15 +114,18 @@
       "またいつでも話しかけてね"
     ];
 
-    function startTalk() {
-      document.getElementById("subtitle").innerText =
-        "パパ：きいてるよ";
+    let scene = 0;
 
-      // 仮の音声（将来 HeyGen / AI に差し替え）
-      const msg = new SpeechSynthesisUtterance(
-        scripts[scene]
-      );
+    function startTalk() {
+      const text = scripts[scene];
+
+      document.getElementById("subtitle").innerText =
+        "パパ：" + text;
+
+      // 仮音声（端末のTTS）
+      const msg = new SpeechSynthesisUtterance(text);
       msg.lang = "ja-JP";
+      msg.rate = 0.95;
       speechSynthesis.speak(msg);
     }
 
